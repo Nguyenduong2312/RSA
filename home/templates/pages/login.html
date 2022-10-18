@@ -1,0 +1,101 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+    
+<head>
+	<title>Đăng nhập</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
+
+
+	<style>
+		body,html{
+			margin: 0;
+			padding: 0;
+			height: 100%;
+			background-image:url("{% static 'images/bg.jpg' %}");
+			background-size: cover;	
+		}
+		.box-login{
+			width: 28%;
+			height: 80%;
+			margin: auto;
+			margin-top: 5%;
+			padding-bottom: 40px;
+			background-color: white;
+			border: 2px solid  #142F1F;
+			position: relative;
+			display: flex;
+			justify-content: center;
+			flex-direction: column;
+			border-radius: 10px;
+
+		}
+		.form_login{
+			margin-top: 50px;
+			padding: 0px 50px;
+		}
+		.form-outline{
+			margin-top: 20px;
+		}
+		.button-loginnn{
+			margin-top: 0px;
+		}
+		.support-login{
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+			padding: 10px;
+		}
+	</style>
+
+</head>
+<body>
+
+
+<div class="box-login">
+	<div class="title_name" >
+		<div class="d-flex justify-content-center">
+			<h3 style="color:#142F1F ;margin-top:50px;font-weight: 800;font-size: 35px;" >Đăng nhập</h3>
+		</div>
+	</div>
+	<div class="form_login">
+		<form method="POST" action="">
+			{% csrf_token %}
+			<div class="form-outline">
+				<label class="form-label" for="form2Example17">Tên đăng nhập</label>
+				<input type="text" name="username" class="form-control" />
+			</div>
+
+			<div class="form-outline">
+				<label class="form-label" for="form2Example27">Mật khẩu</label>
+				<input type="password" name="password" class="form-control" />
+			</div>
+			<div class="support-login">
+				<p class="small text-muted"> <a href="#" style="color: #142F1F;">Quên mật khẩu?</a> </p>
+				<p class="small text-muted"> <a href="{% url 'register' %}" style="color: #142F1F;">Chưa có tài khoản? Đăng ký</a></p>
+			</div>	
+
+			<div class="button-loginnn">
+				<input class="btn btn-block" type="submit" style="background-color: #142F1F; color:white;" value="Đăng nhập">
+			</div>
+		{% if messages %}
+		{% for message in messages %}
+		<div class="alert {{ message.tags }} alert-dismissible" role="alert">
+			<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true">&times;</span>
+			</button>
+			{{ message }}
+		</div>
+		{% endfor %}
+		{% endif %}		
+		</form>
+
+	</div>
+</div>
+
+
+</body>
+
+</html>

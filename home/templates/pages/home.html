@@ -1,0 +1,30 @@
+{% extends 'pages/main.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+    .options{
+        margin-top: 10%;
+        margin-left: 35%;
+        list-style: none;
+    }
+    .op_button{
+        width:400px;
+        padding: 10px;
+        background-color: #142F1F;
+        border-radius: 20px;
+        color:white;
+        border-color: white;
+        margin-top: 20px;
+    }
+</style>
+
+<div>
+    <ul class="options">
+        <li><a class="btn op_button"  href="{% url 'upload_file'%}" >Encryption</a></li>
+        <li><a class="btn op_button"  href="{% url 'upload_file'%" >Decryption</a></li>
+    </ul>
+</div>
+
+{% endblock %}

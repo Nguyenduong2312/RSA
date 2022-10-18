@@ -1,0 +1,39 @@
+{% extends 'pages/main.html' %}
+{% load static %}
+
+{% block style %}
+    .a{
+        margin: auto;
+        margin-top:30px;
+        padding: 20px 50px;
+        background: white ;
+        border-radius:5px;
+        width:50%;
+    }
+    
+{% endblock style %}
+
+
+{% block content %}
+
+
+<div class="a" >
+    <form class="row g-3" method="POST" action="" enctype="multipart/form-data">
+        {% csrf_token %}
+		<div class="form-outline">
+            <label for="formFile" class="form-label ">Nhập email người nhận :</label>
+            {{form.email}}
+        </div>
+
+        <div style="margin-top:30px;">
+        	<input class="btn btn-success btn-block" type="submit" name="update" value="Gửi">
+        </div>
+
+        
+    </form>
+</div>  
+</script>
+
+
+
+{% endblock content %}

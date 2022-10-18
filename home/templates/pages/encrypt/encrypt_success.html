@@ -1,0 +1,35 @@
+{% extends 'pages/main.html' %}
+{% load static %}
+
+{% block style %}
+    .a{
+        margin: auto;
+        margin-top:30px;
+        padding: 20px 50px;
+        background: white ;
+        border-radius:5px;
+        width:50%;
+    }
+    
+{% endblock style %}
+
+
+{% block content %}
+
+
+<div class="a" >
+    <div class="form-outline" style="padding:  20px;">
+        <p style="margin-left : 40%;">Mã hóa thành công.</p>
+        <p style="margin-left : 30%;">File được lưu vào danh sách mã hóa.</p>
+    </div>
+
+    <div style="margin-top:30px;">
+        <a class="btn btn-success btn-block" href="{% url 'InputEmailPage' %}">Gửi...</a>
+        <a class="btn btn-danger btn-block" href="{% url 'home' %}">Trở về</a>
+    </div>    
+</div>  
+</script>
+
+
+
+{% endblock content %}
