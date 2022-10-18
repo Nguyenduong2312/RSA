@@ -20,17 +20,17 @@
 <div class="a" >
     <form class="row g-3" method="POST" action="" enctype="multipart/form-data">
         {% csrf_token %}
-        <div class="form-outline">
-            <label for="inputPassword4" class="form-label" >Tên sách</label>
-            {{form.name}}
-        </div>
 		<div class="form-outline">
             <label for="formFile" class="form-label ">Chọn file</label>
             {{form.field_name}}
         </div>
+        <div class="form-outline">
+            <label for="inputPassword4" class="form-label" >Lưu file mã hóa dưới tên :</label>
+            {{form.name}}
+        </div>
 
         <div style="margin-top:30px;">
-        	<input class="btn btn-primary btn-block" type="submit" name="update" value="Cập nhật">
+        	<input class="btn btn-warning btn-block" type="submit" name="update" value="Mã hóa">
         </div>
 
         
