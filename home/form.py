@@ -7,11 +7,12 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from .models import *
 
+
 class CreateUserForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ['username', 'password1', 'password2']
-def clean(self):
+        fields = ['username','password1', 'password2']
+    def clean(self):
        email = self.cleaned_data.get('email')
        if User.objects.filter(email=email).exists():
             raise ValidationError("Email exists")
@@ -31,7 +32,7 @@ class ChangePasswordForm(PasswordChangeForm):
 class UploadFileForm(ModelForm):
     class Meta:
         model = File_doc
-        fields = ['name','field_name']
+        fields = ['name','file']
 
 class SendFile(forms.Form):
     email = forms.CharField(max_length=50)

@@ -16,11 +16,15 @@ class Account_info(models.Model):
     address = models.CharField(max_length=200, null=True, blank=True)
     phone = models.CharField(max_length=200, null=True, blank=True) #sua lai dang number
     first_login = models.BooleanField(default=True)
+    private_key = models.BinaryField(null=True, blank=True)
+    public_key = models.BinaryField(null=True, blank=True)
+    public_key1 = models.CharField(max_length=200, null=True, blank=True)
     def __str__(self):
         return self.name
 class File_doc(models.Model):
     name = models.CharField(max_length=200, null=True)
-    field_name = models.FileField(default='name.txt', max_length=254) 
+    file = models.FileField(default='name.txt', max_length=254) 
+    en_file = models.FileField(default='name.txt', max_length=254) 
     def __str__(self):
         return self.name
     

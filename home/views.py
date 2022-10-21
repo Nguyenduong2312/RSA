@@ -1,3 +1,6 @@
+import RSA
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
 from xml.etree.ElementTree import Comment
 from django.shortcuts import render, redirect 
 from django.contrib import messages
@@ -6,7 +9,7 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from .decorators import *
-
+from .encrypt import *
 from .models import *
 # Create your views here.
 def home(request):
@@ -15,11 +18,11 @@ def home(request):
 def loginPage(request):
     if request.method == 'POST':
 
-        username = request.POST.get('username')
+        email = request.POST.get('email')
         password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
+        user = authenticate(request, username=email, password=password)
 
-        if username == '':
+        if email == '':
             messages.error(request, 'Tên đăng nhập không được để trống')
 
         elif password == '' : 
@@ -68,6 +71,13 @@ def complete_info(request):
         if is_ex is True:
             user = User.objects.get(username=username)
             Info.user = user
+            key = RSA.generate(2048)
+            passphase = user.password
+            cipherkey, tag, nonce = encrypt_rsa(passphase,key.export_key())
+            Info.public_key = nonce + tag + cipherkey
+            Info.public_key1 = nonce + tag + cipherkey
+            print(Info.public_key1)
+            Info.private_key =  key.public_key().export_key()
         try: 
             Info.save()
         except IntegrityError:
@@ -128,12 +138,25 @@ def password_change_done(request):
     return render(request, 'pages/password_change_done.html', context)
 
 def upload (request):
+    if request.user.is_authenticated:
+        username = request.user.username
+    is_ex = User.objects.filter(username=username).exists()
+    if is_ex is True:
+        user = User.objects.get(username=username)
+    if Account_info.objects.filter(user = user).exists() == True:
+        acc = Account_info.objects.get(user = user)
     form = UploadFileForm()
     if request.method == 'POST':
         try:
             form = UploadFileForm(request.POST, request.FILES)
             if form.is_valid():
+                print('y')
                 file = form.save()
+                file_name = file.file
+                en_file_name = form.cleaned_data.get('name')
+                print(en_file_name)
+                print(acc.public_key1)
+                file.en_file = encrypt_file(acc.public_key1,file_name,en_file_name)
                 file.save() 
             return redirect('en_success')
         except Exception as e:
@@ -143,6 +166,7 @@ def upload (request):
     return render(request, 'pages/encrypt/upload.html', context)
 
 def en_success(request):
+
     return render(request, 'pages/encrypt/encrypt_success.html')
 
 def InputEmailPage(request):
