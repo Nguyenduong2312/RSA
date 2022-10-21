@@ -72,12 +72,13 @@ def complete_info(request):
             user = User.objects.get(username=username)
             Info.user = user
             key = RSA.generate(2048)
-            passphase = user.password
-            cipherkey, tag, nonce = encrypt_rsa(passphase,key.export_key())
-            Info.public_key = nonce + tag + cipherkey
-            Info.public_key1 = nonce + tag + cipherkey
-            print(Info.public_key1)
-            Info.private_key =  key.public_key().export_key()
+            passphrase = user.password
+            print("aa",passphrase)
+            cipherkey, tag, nonce = encrypt_rsa(passphrase,key.export_key())
+            Info.public_key = key.public_key().export_key()
+            #Info.public_key1 = nonce + tag + cipherkey
+            print(Info.public_key)
+            Info.private_key =  nonce + tag + cipherkey
         try: 
             Info.save()
         except IntegrityError:
