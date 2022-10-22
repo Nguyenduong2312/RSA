@@ -46,7 +46,6 @@ def register(request):
         if form.is_valid(): 
             user = form.save()
             password = form.cleaned_data.get('password2')
-            print(password)
             return redirect('loginPage')
 
     return render(request,'pages/register.html',{'form':form})
@@ -58,6 +57,7 @@ def complete_info(request):
     form = FormInfo()
     if request.method == 'POST':
         password = request.POST['pwd']
+        
         verify_user = authenticate(request, username=user.username, password=password)
 
         if verify_user == None:
@@ -74,12 +74,27 @@ def complete_info(request):
             return redirect('complete_info')
 
         Info.user = user
-        key = RSA.generate(2048)
-        passphrase = password
-        print("aa",passphrase)
-        cipherkey, tag, nonce = encrypt_rsa(passphrase,key.export_key())
-        Info.public_key = key.public_key().export_key()
+        key = rsa.generate_private_key(
+            backend=default_backend(),
+            public_exponent=65537,
+            key_size=2048
+        )
+        print()
+        private_key = key.private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.PKCS8,
+            serialization.NoEncryption()
+        )
+        public_key = key.public_key().public_bytes(
+            serialization.Encoding.OpenSSH,
+            serialization.PublicFormat.OpenSSH
+        )
+        print(private_key)
+        cipherkey, tag, nonce = encrypt_rsa(Salt_Hash(password),private_key)
+        print(cipherkey)
+        Info.public_key = public_key
         print(Info.public_key)
+
         Info.private_key =  nonce + tag + cipherkey
         try: 
             Info.save()
@@ -162,14 +177,14 @@ def upload (request):
                 email = request.POST['receiver_email']
                 if Account_info.objects.filter(email = email).exists() == True:
                     acc = Account_info.objects.get(email = email)
-                    
+                
                 file = form.save()
                 file.sender_email = acc_user.email
                 file_name = file.file.path
-                print(file_name)
-                en_file_name = "en_file"  
+                en_file_name = "en_file "  
                 file.en_file = encrypt_file(acc.public_key,file_name,en_file_name)
                 file.save() 
+                print('xong')
                 return redirect('en_success')
         except Exception as e:
             messages.error(request, e)
@@ -211,21 +226,22 @@ def decrypt(request):
 
                 password = request.POST['pwd']
                 verify_user = authenticate(request, username=user.username, password=password)
-                print(password)
+                print(password,"---")
                 if verify_user == None:
                     print('sai')
                     messages.error(request,'Password cũ không đúng')
-                    return redirect('decrypt')
+                    return redirect('decrypt_file')
                 nonce, tag, cipherkey = acc_user.private_key[0:16], acc_user.private_key[16:32], acc_user.private_key[32:]
-                print(tag,nonce)
-                key_decrypt = decrypt_rsa_private_key(password, cipherkey, tag, nonce)
+                key_decrypt = decrypt_rsa_private_key(Salt_Hash(password), cipherkey, tag, nonce)
+                print(key_decrypt)
+                print(user.private_key)
                 decrypt_file('media/en_file.bin',key_decrypt)
-
+                print('xong')
                 return redirect('home')
         except Exception as e:
-            print('b')
+            print('ab')
             messages.error(request, e)
-            return redirect('decrypt')
+            return redirect('decrypt_file')
 
     #print(acc_user.private_key,"---",user.password)
     context = {'form':form}
