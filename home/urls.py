@@ -16,8 +16,8 @@ urlpatterns = [
 
     path('upload_file/', views.upload,name='upload_file'),   
     path('en_success/', views.en_success,name='en_success'),   
-    path('InputEmailPage/', views.InputEmailPage,name='InputEmailPage'),   
-
+    path('en_list/', views.en_list,name='en_list'),   
+    path('decrypt/', views.decrypt,name='decrypt'),   
 ]
 
 if settings.DEBUG:

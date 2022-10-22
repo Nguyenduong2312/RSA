@@ -1,0 +1,22 @@
+{% extends 'pages/table.html' %}
+{% load static %}
+
+{% block table_head %}
+<tr>
+    <th>Người nhận</th>
+    <th>Tên file</th>
+    <th>Tên file mã hóa</th>
+</tr>
+
+{% endblock table_head %}
+{% block table_body %}
+
+{% for i in list %}
+<tr>
+    <th>{{i.receiver_email}}</th>
+    <th><a href="{{link}}" download>{{i.file}}</a></th>
+    <th><a href="{{i.en_file.path}}"download>{{i.en_file}}</a></th>
+</tr>	
+{% endfor %}
+{% endblock table_body %}
+

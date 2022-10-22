@@ -21,7 +21,6 @@ class FormInfo(ModelForm):
     class Meta:
         model = Account_info
         fields = ['name','email','phone','birth','address']
-        
         widgets = {
             'birth': forms.DateInput()
         }
@@ -31,8 +30,9 @@ class ChangePasswordForm(PasswordChangeForm):
         fields = ['old_password', 'new_password1', 'new_password2']
 class UploadFileForm(ModelForm):
     class Meta:
-        model = File_doc
-        fields = ['name','file']
-
-class SendFile(forms.Form):
-    email = forms.CharField(max_length=50)
+        model = Encrypt
+        fields = ['receiver_email','file']
+class DecryptForm(ModelForm):
+    class Meta:
+        model = Encrypt
+        fields = ['file']

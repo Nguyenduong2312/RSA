@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 # from django.utils.translation import gettext as _
 from django.contrib import messages
 from django import forms
-
+import os
 DEFAULT_PASSWORD = 'password'
 
 class Account_info(models.Model):
@@ -21,10 +21,14 @@ class Account_info(models.Model):
     public_key1 = models.CharField(max_length=200, null=True, blank=True)
     def __str__(self):
         return self.name
-class File_doc(models.Model):
-    name = models.CharField(max_length=200, null=True)
+class Encrypt(models.Model): 
+    sender_email = models.EmailField(blank=True)
+    receiver_email = models.EmailField()
     file = models.FileField(default='name.txt', max_length=254) 
     en_file = models.FileField(default='name.txt', max_length=254) 
+    @property
+    def filename(self):
+        return os.path.basename(self.document.name)
     def __str__(self):
-        return self.name
+        return self.receiver_email
     

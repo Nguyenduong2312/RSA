@@ -44,22 +44,25 @@ def register(request):
         form = CreateUserForm(request.POST)
         if form.is_valid(): 
             user = form.save()
-            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password2')
+            print(password)
             return redirect('loginPage')
 
     return render(request,'pages/register.html',{'form':form})
 
 def complete_info(request):
-    
-    if request.user.is_authenticated:
-        username = request.user.username
-    is_ex = User.objects.filter(username=username).exists()
-    if is_ex is True:
-        user = User.objects.get(username=username)
+    user = request.user    
     if Account_info.objects.filter(user = user).exists() == True:
         return redirect('home')
     form = FormInfo()
     if request.method == 'POST':
+        password = request.POST['pwd']
+        verify_user = authenticate(request, username=user.username, password=password)
+
+        if verify_user == None:
+            print('sai')
+            messages.error(request,'Password cũ không đúng')
+            return redirect('complete_info')
         form = FormInfo(request.POST)
         form.user = user
     if form.is_valid():
@@ -68,17 +71,15 @@ def complete_info(request):
         except Exception as e:
             messages.error(request, e)
             return redirect('complete_info')
-        if is_ex is True:
-            user = User.objects.get(username=username)
-            Info.user = user
-            key = RSA.generate(2048)
-            passphrase = user.password
-            print("aa",passphrase)
-            cipherkey, tag, nonce = encrypt_rsa(passphrase,key.export_key())
-            Info.public_key = key.public_key().export_key()
-            #Info.public_key1 = nonce + tag + cipherkey
-            print(Info.public_key)
-            Info.private_key =  nonce + tag + cipherkey
+
+        Info.user = user
+        key = RSA.generate(2048)
+        passphrase = password#
+        print("aa",passphrase)
+        cipherkey, tag, nonce = encrypt_rsa(passphrase,key.export_key())
+        Info.public_key = key.public_key().export_key()
+        print(Info.public_key)
+        Info.private_key =  nonce + tag + cipherkey
         try: 
             Info.save()
         except IntegrityError:
@@ -121,14 +122,22 @@ def account_setting(request):
 
 @login_required(login_url='login')
 def password_change(request):
+    if request.user.is_authenticated:
+        username = request.user.username
+    is_ex = User.objects.filter(username=username).exists()
+    if is_ex is True:
+        user = User.objects.get(username=username)
+    if Account_info.objects.filter(user = user).exists() == True:
+        acc = Account_info.objects.get(user = user)
     form = ChangePasswordForm(request.user)
 
     if request.method == 'POST':
         form = ChangePasswordForm(request.user, request.POST)
-
+        
         if form.is_valid():
             user = form.save()
-            update_session_auth_hash(request, user)
+            new_password = form.cleaned_data['new_password2']
+            update_session_auth_hash(request, user) 
             messages.success(request, 'Đổi mật khẩu thành công!')
             return redirect('password_change_done')
 
@@ -139,27 +148,27 @@ def password_change_done(request):
     return render(request, 'pages/password_change_done.html', context)
 
 def upload (request):
-    if request.user.is_authenticated:
-        username = request.user.username
-    is_ex = User.objects.filter(username=username).exists()
-    if is_ex is True:
-        user = User.objects.get(username=username)
+    user = request.user
     if Account_info.objects.filter(user = user).exists() == True:
-        acc = Account_info.objects.get(user = user)
+        acc_user = Account_info.objects.get(user = user)
+        print(acc_user.email)
     form = UploadFileForm()
     if request.method == 'POST':
         try:
             form = UploadFileForm(request.POST, request.FILES)
             if form.is_valid():
-                print('y')
+                print("yy")
+                email = request.POST['receiver_email']
+                if Account_info.objects.filter(email = email).exists() == True:
+                    acc = Account_info.objects.get(email = email)
                 file = form.save()
-                file_name = file.file
-                en_file_name = form.cleaned_data.get('name')
-                print(en_file_name)
-                print(acc.public_key1)
-                file.en_file = encrypt_file(acc.public_key1,file_name,en_file_name)
+                file.sender_email = acc_user.email
+                file_name = file.file.path
+                print(file_name)
+                en_file_name = "en_" +str(file.file)[:-4]
+                file.en_file = encrypt_file(acc.public_key,file_name,en_file_name)
                 file.save() 
-            return redirect('en_success')
+                return redirect('en_success')
         except Exception as e:
             messages.error(request, e)
             return redirect('upload_file')
@@ -167,18 +176,54 @@ def upload (request):
     return render(request, 'pages/encrypt/upload.html', context)
 
 def en_success(request):
-
     return render(request, 'pages/encrypt/encrypt_success.html')
-
-def InputEmailPage(request):
-    form = SendFile()
-    if request.method == 'POST':
-        print('pot')
-        form = SendFile(request.POST)
-        if form.is_valid():
-            email =  form.cleaned_data.get('email')
-            print(email)
-            return redirect('home')
-    context = {'form':form}
-    return render(request, 'pages/encrypt/InputEmail.html', context)
  
+def en_list(request):
+    context = {}
+    if request.user.is_authenticated:
+        username = request.user.username
+    is_ex = User.objects.filter(username=username).exists()
+    if is_ex is True:
+        user = User.objects.get(username=username)
+    if Account_info.objects.filter(user = user).exists() == True:
+        acc_user = Account_info.objects.get(user = user)
+        email = acc_user.email
+        print("a",email)
+        list = Encrypt.objects.filter(sender_email = email)
+        path = list[0].file.path
+        print(path)
+        context = {'list':list,'link':path}
+    return render(request, 'pages/encrypt/en_list.html',context)
+
+
+def decrypt(request):
+    print('a')
+    user = request.user
+    if Account_info.objects.filter(user = user).exists() == True:
+        acc_user = Account_info.objects.get(user = user)
+    form = DecryptForm()
+
+    if request.method == 'POST':
+        try: 
+            form = DecryptForm(request.POST, request.FILES)
+            if form.is_valid():
+
+                password = request.POST['pwd']
+                verify_user = authenticate(request, username=user.username, password=password)
+                print(password)
+                if verify_user == None:
+                    print('sai')
+                    messages.error(request,'Password cũ không đúng')
+                    return redirect('decrypt')
+        except Exception as e:
+            messages.error(request, e)
+            return redirect('decrypt')
+
+    #print(acc_user.private_key,"---",user.password)
+    cipherkey, tag, nonce = acc_user.private_key[0:16], acc_user.private_key[16:32], acc_user.private_key[32:]
+    #print(cipherkey,"---",tag)
+    key_decrypt = decrypt_rsa_private_key(password, cipherkey, tag, nonce)
+    #decrypt_file('media/en.bin',key_decrypt)
+    context = {'form':form}
+
+    return render(request, 'pages/encrypt/decrypt.html',context)
