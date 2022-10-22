@@ -1,3 +1,4 @@
+from fileinput import filename
 import RSA
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -74,7 +75,7 @@ def complete_info(request):
 
         Info.user = user
         key = RSA.generate(2048)
-        passphrase = password#
+        passphrase = password
         print("aa",passphrase)
         cipherkey, tag, nonce = encrypt_rsa(passphrase,key.export_key())
         Info.public_key = key.public_key().export_key()
@@ -161,11 +162,12 @@ def upload (request):
                 email = request.POST['receiver_email']
                 if Account_info.objects.filter(email = email).exists() == True:
                     acc = Account_info.objects.get(email = email)
+                    
                 file = form.save()
                 file.sender_email = acc_user.email
                 file_name = file.file.path
                 print(file_name)
-                en_file_name = "en_" +str(file.file)[:-4]
+                en_file_name = "en_file"  
                 file.en_file = encrypt_file(acc.public_key,file_name,en_file_name)
                 file.save() 
                 return redirect('en_success')
@@ -197,13 +199,12 @@ def en_list(request):
 
 
 def decrypt(request):
-    print('a')
     user = request.user
     if Account_info.objects.filter(user = user).exists() == True:
         acc_user = Account_info.objects.get(user = user)
     form = DecryptForm()
-
     if request.method == 'POST':
+        print('y')
         try: 
             form = DecryptForm(request.POST, request.FILES)
             if form.is_valid():
@@ -215,15 +216,18 @@ def decrypt(request):
                     print('sai')
                     messages.error(request,'Password cũ không đúng')
                     return redirect('decrypt')
+                nonce, tag, cipherkey = acc_user.private_key[0:16], acc_user.private_key[16:32], acc_user.private_key[32:]
+                print(tag,nonce)
+                key_decrypt = decrypt_rsa_private_key(password, cipherkey, tag, nonce)
+                decrypt_file('media/en_file.bin',key_decrypt)
+
+                return redirect('home')
         except Exception as e:
+            print('b')
             messages.error(request, e)
             return redirect('decrypt')
 
     #print(acc_user.private_key,"---",user.password)
-    cipherkey, tag, nonce = acc_user.private_key[0:16], acc_user.private_key[16:32], acc_user.private_key[32:]
-    #print(cipherkey,"---",tag)
-    key_decrypt = decrypt_rsa_private_key(password, cipherkey, tag, nonce)
-    #decrypt_file('media/en.bin',key_decrypt)
     context = {'form':form}
 
     return render(request, 'pages/encrypt/decrypt.html',context)
